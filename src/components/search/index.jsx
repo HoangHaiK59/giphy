@@ -1,7 +1,9 @@
 import React from 'react';
-import { makeStyles, Container, Grid, fade, InputBase, TextField, useTheme, Button } from '@material-ui/core';
+import { makeStyles, Container, Grid, fade, TextField, useTheme, Button } from '@material-ui/core';
 import ThemeProvider from '@material-ui/styles/ThemeProvider';
 import Image from '../image';
+import { ArrowDropDown } from '@material-ui/icons';
+import PropTypes from 'prop-types';
 
 const useStyles = makeStyles(theme => ({
     search: {
@@ -38,6 +40,34 @@ const useStyles = makeStyles(theme => ({
         paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
         transition: theme.transitions.create('width'),
         width: '100%',
+    },
+    item: {
+        position: 'relative',
+        width: '100%',
+        cursor: 'pointer'
+    },
+    hoverItem: {
+        position: 'absolute',
+        background: 'rgba(48, 47, 47, .5)',
+        top:0,
+        left:0,
+        width: '100%',
+        height: '100%'
+    },
+    action: {
+        position: 'absolute',
+        bottom: 10,
+        right: 5,
+        display: 'flex',
+        justifyContent: 'flex-end'
+    },
+    btn: {
+        fontSize: 30
+    },
+    loading: {
+        position: 'absolute',
+        top: '50%',
+        left: '50%'
     }
 }))
 
@@ -69,7 +99,7 @@ const useOffsetPrevious = (value) => {
     return ref.current;
 }
 
-const Search = props => {
+const Search = (props) => {
     const classes = useStyles();
     const [value, setValue] = React.useState('');
     const [offset, setOffset] = React.useState(0);
@@ -83,9 +113,12 @@ const Search = props => {
     const handleChangeOffset = () => {
         setOffset(offset + 8);
     }
-    console.log(valueChange, offsetChange)
+    const customLoading = loading => {
+        props.showLoading(loading)
+    }
     React.useEffect(() => {
         if (valueChange || offsetChange) {
+            customLoading(true)
             fetch(`https://api.giphy.com/v1/gifs/search?api_key=PF4Zi8i5b4hjlGba2L43PwhOshEXwDr9&q=${value}&limit=8&offset=${offset}&rating=g&lang=en`)
             .then(res => {
                 res.json().then(d => {
@@ -100,10 +133,37 @@ const Search = props => {
     })
     const setDataVlue = (dataValue, type) => {
         if (type === 'new') {
-            setSearchData(dataValue)
+            setSearchData({...dataValue, data: dataValue.data.map(d => ({...d, hover: false, favorite: false}))})
         } else {
-            setSearchData({...dataValue, data: searchData ? searchData.data.concat(dataValue.data): []})
+            setSearchData({...dataValue, data: searchData ? searchData.data.concat(dataValue.data.map(d => ({...d, favorite: false, hover: false}))): []})
         }
+        customLoading(false)
+    }
+    const mouseMove = id => {
+        setSearchData({...searchData, data: searchData.data.map(d => {
+            if(d.id === id) {
+                return {...d, hover: true}
+            } else {
+                return {...d, hover: false}
+            }
+        } )})
+    }
+    const mouseLeave = id => {
+        setSearchData({...searchData, data: searchData.data.map(d => {
+            if(d.id === id) {
+                return {...d, hover: false}
+            } else {
+                return {...d, hover: false}
+            }
+        } )})
+    }
+    const add2Favorite = id => {
+        setSearchData({...searchData, data: searchData.data.map(d => {
+            if(d.id === id) {
+                return {...d, favorite: true}
+            }
+            return d
+        } )})
     }
     console.log(searchData)
     return <Container maxWidth="lg">
@@ -121,7 +181,7 @@ const Search = props => {
                             classes={{
                                 root: classes.inputCustom
                             }}
-                            placeholder="Search..."
+                            placeholder="Start searching for images"
                         />
                     </ThemeProvider>
 
@@ -141,17 +201,28 @@ const Search = props => {
             {
                 searchData && searchData?.data.map(d => 
                     <Grid key={d.id} item xs={6} md={3}>
-                        <Image data={d} />
+                        <div className={classes.item}>
+                            <Image 
+                            data={d} 
+                            add2Favorites={props.add2Favorites}
+                            delFromFavorites={props.delFromFavorites}
+                            />
+                        </div>
                     </Grid>
                 )
             }
             {
-                searchData && <Grid item xs={12} md={12} style={{display: 'flex', justifyContent: 'center'}}>
-                    <Button onClick={handleChangeOffset}>Fresh More</Button>
+                (searchData && searchData.data.length > 0) && <Grid item xs={12} md={12} style={{display: 'flex', justifyContent: 'center'}}>
+                    <Button startIcon={<ArrowDropDown />} variant="contained" color="primary" onClick={handleChangeOffset}>Fresh More</Button>
                 </Grid>
             }
         </Grid>
     </Container>
+}
+
+Search.propTypes = {
+    add2Favorites: PropTypes.func.isRequired, 
+    delFromFavorites: PropTypes.func.isRequired
 }
 
 export default Search;

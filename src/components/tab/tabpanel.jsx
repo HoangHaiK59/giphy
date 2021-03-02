@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { Box, Typography, makeStyles } from '@material-ui/core';
+import { Box, makeStyles } from '@material-ui/core';
 
 const useStyles= makeStyles(theme => ({
     tabContainer: {

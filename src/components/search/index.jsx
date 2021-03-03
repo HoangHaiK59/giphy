@@ -9,7 +9,10 @@ import Empty from '../empty';
 
 const useStyles = makeStyles(theme => ({
     search: {
-        position: 'relative',
+        position: 'fixed',
+        top: 150,
+        left: '20%',
+        zIndex: theme.zIndex.drawer + 99999999999999999,
         borderRadius: theme.shape.borderRadius,
         backgroundColor: fade(theme.palette.common.white, 0.15),
         '&:hover': {
@@ -20,7 +23,11 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
         [theme.breakpoints.up('sm')]: {
             marginLeft: theme.spacing(8),
-            width: 'auto',
+            width: 1000,
+        },
+        [theme.breakpoints.down('sm')]: {
+            width: 800,
+            left: 0
         },
     },
     searchIcon: {
@@ -36,6 +43,9 @@ const useStyles = makeStyles(theme => ({
         // color: 'inherit',
         width: '100%',
         padding: theme.spacing(1, 2, 1, 2),
+        position: 'sticky',
+        top: 200,
+        zIndex:99999999999999999
     },
     input: {
         padding: theme.spacing(1, 1, 1, 0),
@@ -72,7 +82,7 @@ const useStyles = makeStyles(theme => ({
         left: '50%'
     },
     spacing: {
-        marginTop: theme.spacing(2)
+        marginTop: theme.spacing(2),
     }
 }))
 
@@ -107,6 +117,7 @@ const Search = (props) => {
     const [value, setValue] = React.useState(sessionStorage.getItem('searchQuery') ? sessionStorage.getItem('searchQuery') :  '');
     const [offset, setOffset] = React.useState(0);
     const [searchData, setSearchData] = React.useState(null);
+    const textInput = React.createRef();
     const theme = useTheme()
     const valueChange = useValueHasChanged(value)
     const offsetChange = useOffsetHasChanged(offset)
@@ -120,7 +131,12 @@ const Search = (props) => {
     const customLoading = loading => {
         props.showLoading(loading)
     }
+    const scrollEvent = event => {
+        console.log(textInput.current)
+        // textInput.current.styles
+    }
     React.useEffect(() => {
+        document.title = 'Search'
         if (valueChange || offsetChange) {
             customLoading(true)
             fetch(`https://api.giphy.com/v1/gifs/search?api_key=PF4Zi8i5b4hjlGba2L43PwhOshEXwDr9&q=${value}&limit=8&offset=${offset}&rating=g&lang=en`)
@@ -134,6 +150,10 @@ const Search = (props) => {
                 })
             })
         }
+    })
+    React.useEffect(() => {
+        window.addEventListener('scroll',e => scrollEvent(e))
+        return window.removeEventListener('scroll', e => scrollEvent(e))
     })
     const setDataVlue = (dataValue, type) => {
         if (type === 'new') {
@@ -196,6 +216,7 @@ const Search = (props) => {
                     </div> */}
                     <ThemeProvider theme={theme}>
                         <TextField
+                            ref={textInput}
                             value={value}
                             color="primary"
                             onChange={handleChange}

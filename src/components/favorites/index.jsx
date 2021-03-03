@@ -26,6 +26,9 @@ const useStyles = makeStyles(theme => ({
 
 const Favorites = props => {
     const classes = useStyles();
+    React.useEffect(() => {
+        document.title = 'Favorites'
+    })
     return <Container maxWidth="lg" className={classes.container}>
     {
             props.favorites.length === 0 && <Empty textContent="You don't have any favorite pictures" variant="h5" />

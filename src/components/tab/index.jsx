@@ -16,6 +16,7 @@ const useStyles = makeStyles(theme => ({
     appBar: {
         width: '100%',
         minHeight: 64,
+        zIndex: theme.zIndex.drawer + 999999999
     },
     toolbar: {
         display: 'flex',
@@ -30,6 +31,7 @@ const useStyles = makeStyles(theme => ({
         boxShadow: '1px 1px rgb(190, 194, 190)',
         position: 'sticky',
         top: 64,
+        zIndex: theme.zIndex.drawer + 999999999
     },
     loading: {
         position: 'absolute',
@@ -43,12 +45,15 @@ const useStyles = makeStyles(theme => ({
         right: '5%'
     },
     backdrop: {
-        zIndex: theme.zIndex.drawer + 99999,
+        zIndex: theme.zIndex.drawer + 99999999999999,
         color: '#fff'
     },
     brand: {
         color: theme.palette.common.white,
         fontSize: 30
+    },
+    snackbar: {
+        zIndex: theme.zIndex.drawer + 99999999999999999999
     }
 }))
 
@@ -95,8 +100,9 @@ const TabNavigation = props => {
                 showToast && 
                     <Snackbar anchorOrigin={{
                     vertical: 'top',
-                    horizontal: 'right'
+                    horizontal: 'right',
                      }}
+                     className={classes.snackbar}
                     open={showToast}
                     autoHideDuration={2000}
                     message={message}

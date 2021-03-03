@@ -132,7 +132,7 @@ const Search = (props) => {
         props.showLoading(loading)
     }
     const scrollEvent = event => {
-        console.log(textInput.current)
+        // console.log(textInput.current)
         // textInput.current.styles
     }
     React.useEffect(() => {

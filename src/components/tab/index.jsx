@@ -112,7 +112,7 @@ const TabNavigation = props => {
             }
             <Tabs value={value} onChange={handleChange} className={classes.tab} variant="scrollable" scrollButtons="auto">
                 <Tab label="Search" {...controlTab(0)} icon={<Collections />}/>
-                <Tab label="Favorites" {...controlTab(1)} icon={<Favorite />} />
+                <Tab label={`Favorites(${props.favorites.length})`} {...controlTab(1)} icon={<Favorite />} />
             </Tabs>
             <TabPanel value={value} index={0}>
                 <Search {...props} showLoading={showLoading} handleShowToastAndMessage={handleShowToastAndMessage}/>
@@ -125,7 +125,7 @@ const TabNavigation = props => {
 }
 
 const mapStateToProps = (state) => ({
-
+    favorites: state.giphy.favorites
 })
 
 const mapDispatchToProps = (dispatch) => ({

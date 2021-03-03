@@ -36,7 +36,6 @@ const Favorites = props => {
     <Grid container spacing={2} justify="center" style={{marginTop: '2rem'}}>
         <Grid item xs={12} md={12} className={classes.count}>
             <Button variant="contained" color="secondary" onClick={props.delAllFavorites}>Unlike all</Button>
-            <Typography variant="h6" className={classes.spacing}>Liked: {props.favorites.length}</Typography>
         </Grid>
         {
             props.favorites.length > 0 && props.favorites.map(d => 

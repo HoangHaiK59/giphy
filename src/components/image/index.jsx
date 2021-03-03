@@ -64,17 +64,17 @@ const Image = ({ data, add2Favorites, delFromFavorites , showToastAndMessage, ..
             delFromFavorites(dataValue.id)
             showToastAndMessage(true, 'Deleted from favorites')
         } else {
-            setDataValue({...dataValue, favorite: true })
+            setDataValue({...dataValue, favorite: true, hover: false })
             if (props.favorites.find(f => f.id === dataValue.id)) {
                 showToastAndMessage(true, 'Already exist')
             } else {
-                add2Favorites({...dataValue, favorite: true })
+                add2Favorites({...dataValue, favorite: true, hover: false })
                 showToastAndMessage(true, 'Added to favorites')
             }
         }
 
     }
-    return <div className={classes.cardContainer} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
+    return <div className={classes.cardContainer} onMouseMove={() => onMouseMove()} onMouseLeave={() => onMouseLeave()}>
         {
             dataValue.hover && <div className={classes.hoverItem}>
                 <div className={classes.action}>

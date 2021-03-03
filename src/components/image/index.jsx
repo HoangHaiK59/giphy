@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles, Button, Tooltip } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Favorite } from '@material-ui/icons'
+import { connect } from 'react-redux';
 
 const useStyles = makeStyles(theme => ({
     cardContainer: {
@@ -41,7 +42,7 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-const Image = ({ data, add2Favorites, delFromFavorites }) => {
+const Image = ({ data, add2Favorites, delFromFavorites , showToastAndMessage, ...props}) => {
     const classes = useStyles();
     const [dataValue, setDataValue]= React.useState(initDataState(data))
     function initDataState(data){
@@ -61,9 +62,15 @@ const Image = ({ data, add2Favorites, delFromFavorites }) => {
         if (dataValue.favorite) {
             setDataValue({...dataValue, favorite: false })
             delFromFavorites(dataValue.id)
+            showToastAndMessage(true, 'Deleted from favorites')
         } else {
             setDataValue({...dataValue, favorite: true })
-            add2Favorites({...dataValue, favorite: true })
+            if (props.favorites.find(f => f.id === dataValue.id)) {
+                showToastAndMessage(true, 'Already exist')
+            } else {
+                add2Favorites({...dataValue, favorite: true })
+                showToastAndMessage(true, 'Added to favorites')
+            }
         }
 
     }
@@ -91,7 +98,19 @@ const Image = ({ data, add2Favorites, delFromFavorites }) => {
 Image.propTypes = {
     data: PropTypes.any.isRequired,
     add2Favorites: PropTypes.func.isRequired, 
-    delFromFavorites: PropTypes.func.isRequired
+    delFromFavorites: PropTypes.func.isRequired,
+    showToastAndMessage: PropTypes.func.isRequired,
 }
 
-export default Image;
+const mapStateToProps = (state, ownProps) => {
+    return {
+        favorites: state.giphy.favorites
+    }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+    return {
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Image);

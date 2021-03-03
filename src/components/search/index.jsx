@@ -4,6 +4,8 @@ import ThemeProvider from '@material-ui/styles/ThemeProvider';
 import Image from '../image';
 import { ArrowDropDown } from '@material-ui/icons';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import Empty from '../empty';
 
 const useStyles = makeStyles(theme => ({
     search: {
@@ -68,12 +70,14 @@ const useStyles = makeStyles(theme => ({
         position: 'absolute',
         top: '50%',
         left: '50%'
+    },
+    spacing: {
+        marginTop: theme.spacing(2)
     }
 }))
 
 const useValueHasChanged= (val) => {
     const prevVal = useValuePrevious(val)
-    console.log(prevVal, val)
     return prevVal !== val
 }
 
@@ -87,7 +91,6 @@ const useValuePrevious = (value) => {
 
 const useOffsetHasChanged= (val) => {
     const prevVal = useOffsetPrevious(val)
-    console.log(prevVal, val)
     return prevVal !== val
 }
 
@@ -101,14 +104,15 @@ const useOffsetPrevious = (value) => {
 
 const Search = (props) => {
     const classes = useStyles();
-    const [value, setValue] = React.useState('');
+    const [value, setValue] = React.useState(sessionStorage.getItem('searchQuery') ? sessionStorage.getItem('searchQuery') :  '');
     const [offset, setOffset] = React.useState(0);
-    const [searchData, setSearchData] = React.useState(null)
+    const [searchData, setSearchData] = React.useState(null);
     const theme = useTheme()
     const valueChange = useValueHasChanged(value)
     const offsetChange = useOffsetHasChanged(offset)
     const handleChange = (event) => {
         setValue(event.target.value)
+        sessionStorage.setItem('searchQuery', event.target.value)
     }
     const handleChangeOffset = () => {
         setOffset(offset + 8);
@@ -133,42 +137,59 @@ const Search = (props) => {
     })
     const setDataVlue = (dataValue, type) => {
         if (type === 'new') {
-            setSearchData({...dataValue, data: dataValue.data.map(d => ({...d, hover: false, favorite: false}))})
+            setSearchData({...dataValue, data: dataValue.data.map(d => {
+                if (props.favorites.length === 0) {
+                    return {...d, hover: false, favorite: false}
+                } else {
+                    if (props.favorites.find(f => f.id === d.id)) {
+                        return {...d, hover: false, favorite: true}
+                    } else {
+                        return {...d, hover: false, favorite: false}
+                    }
+                }
+            })})
         } else {
-            setSearchData({...dataValue, data: searchData ? searchData.data.concat(dataValue.data.map(d => ({...d, favorite: false, hover: false}))): []})
+            setSearchData({...dataValue, data: searchData ? searchData.data.concat(dataValue.data.map(d => {
+                if (props.favorites.find(f => f.id === d.id)) {
+                    return {...d, favorite: false, hover: true}
+                } else {
+                    return {...d, favorite: false, hover: false}
+                }
+            })): []})
         }
-        customLoading(false)
+        setTimeout(() => {
+            customLoading(false)
+        }, 200)
     }
-    const mouseMove = id => {
-        setSearchData({...searchData, data: searchData.data.map(d => {
-            if(d.id === id) {
-                return {...d, hover: true}
-            } else {
-                return {...d, hover: false}
-            }
-        } )})
-    }
-    const mouseLeave = id => {
-        setSearchData({...searchData, data: searchData.data.map(d => {
-            if(d.id === id) {
-                return {...d, hover: false}
-            } else {
-                return {...d, hover: false}
-            }
-        } )})
-    }
-    const add2Favorite = id => {
-        setSearchData({...searchData, data: searchData.data.map(d => {
-            if(d.id === id) {
-                return {...d, favorite: true}
-            }
-            return d
-        } )})
-    }
-    console.log(searchData)
+    // const mouseMove = id => {
+    //     setSearchData({...searchData, data: searchData.data.map(d => {
+    //         if(d.id === id) {
+    //             return {...d, hover: true}
+    //         } else {
+    //             return {...d, hover: false}
+    //         }
+    //     } )})
+    // }
+    // const mouseLeave = id => {
+    //     setSearchData({...searchData, data: searchData.data.map(d => {
+    //         if(d.id === id) {
+    //             return {...d, hover: false}
+    //         } else {
+    //             return {...d, hover: false}
+    //         }
+    //     } )})
+    // }
+    // const add2Favorite = id => {
+    //     setSearchData({...searchData, data: searchData.data.map(d => {
+    //         if(d.id === id) {
+    //             return {...d, favorite: true}
+    //         }
+    //         return d
+    //     } )})
+    // }
     return <Container maxWidth="lg">
         <Grid container spacing={2} justify="center">
-            <Grid item xs={12} md={12}>
+            <Grid item xs={12} md={12} className={classes.spacing}>
                 <div className={classes.search}>
                     {/* <div className={classes.searchIcon}>
                         <SearchIcon />
@@ -199,17 +220,20 @@ const Search = (props) => {
         </Grid>
         <Grid container spacing={2} justify="center" style={{marginTop: '2rem'}}>
             {
-                searchData && searchData?.data.map(d => 
+                (searchData && searchData.data.length > 0) ? searchData?.data.map(d => 
                     <Grid key={d.id} item xs={6} md={3}>
                         <div className={classes.item}>
                             <Image 
                             data={d} 
                             add2Favorites={props.add2Favorites}
                             delFromFavorites={props.delFromFavorites}
+                            showToastAndMessage={props.handleShowToastAndMessage}
                             />
                         </div>
                     </Grid>
-                )
+                ): <Grid item xs={12} md={12}>
+                    <Empty textContent={`No results found for ${value}`} variant="h5" />
+                </Grid>
             }
             {
                 (searchData && searchData.data.length > 0) && <Grid item xs={12} md={12} style={{display: 'flex', justifyContent: 'center'}}>
@@ -222,7 +246,19 @@ const Search = (props) => {
 
 Search.propTypes = {
     add2Favorites: PropTypes.func.isRequired, 
-    delFromFavorites: PropTypes.func.isRequired
+    delFromFavorites: PropTypes.func.isRequired,
+    handleShowToastAndMessage: PropTypes.func.isRequired
 }
 
-export default Search;
+const mapStateToProps = (state, ownProps) => {
+    return {
+        favorites: state.giphy.favorites
+    }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+    return {
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Search);

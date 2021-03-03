@@ -1,22 +1,40 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Container, Grid, makeStyles } from '@material-ui/core';
+import { Button, Container, Grid, makeStyles, Typography } from '@material-ui/core';
 import Image from '../image';
+import Empty from '../empty';
 
 const useStyles = makeStyles(theme => ({
+    container: {
+        minHeight: '70vh',
+        position: 'relative'
+    },
     item: {
         position: 'relative',
         width: '100%',
         cursor: 'pointer'
     },
+    count: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+    },
+    spacing: {
+        marginLeft: theme.spacing(2)
+    }
 }))
 
 const Favorites = props => {
     const classes = useStyles();
-    console.log(props)
-    return <Container maxWidth="lg">
+    return <Container maxWidth="lg" className={classes.container}>
+    {
+            props.favorites.length === 0 && <Empty textContent="You don't have any favorite pictures" variant="h5" />
+    }
     <Grid container spacing={2} justify="center" style={{marginTop: '2rem'}}>
+        <Grid item xs={12} md={12} className={classes.count}>
+            <Button variant="contained" color="secondary" onClick={props.delAllFavorites}>Unlike all</Button>
+            <Typography variant="h6" className={classes.spacing}>Liked: {props.favorites.length}</Typography>
+        </Grid>
         {
             props.favorites.length > 0 && props.favorites.map(d => 
                 <Grid key={d.id} item xs={6} md={3}>
@@ -25,6 +43,7 @@ const Favorites = props => {
                         data={d} 
                         add2Favorites={props.add2Favorites}
                         delFromFavorites={props.delFromFavorites}
+                        showToastAndMessage={props.handleShowToastAndMessage}
                         />
                     </div>
                 </Grid>
@@ -36,7 +55,9 @@ const Favorites = props => {
 
 Favorites.propTypes = {
     add2Favorites: PropTypes.func.isRequired,
-    delFromFavorites: PropTypes.func.isRequired
+    delFromFavorites: PropTypes.func.isRequired,
+    handleShowToastAndMessage: PropTypes.func.isRequired,
+    delAllFavorites: PropTypes.func.isRequired
 }
 
 const mapStateToProps = state => ({

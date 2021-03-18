@@ -2,11 +2,10 @@ import React from 'react';
 import { makeStyles, CssBaseline, AppBar, Toolbar, Tabs, Tab, CircularProgress, Snackbar, Backdrop } from '@material-ui/core';
 import { TabPanel, controlTab } from './tabpanel';
 import Search from '../search';
-import { GiphyConstant } from '../../store/constant';
-import { connect } from 'react-redux';
 import Favorites from '../favorites';
 import { GitHub, Collections, Favorite } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
+import { GiphyContext } from '../../context/giphy.context';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -110,28 +109,35 @@ const TabNavigation = props => {
                     />
 
             }
-            <Tabs value={value} onChange={handleChange} className={classes.tab} variant="scrollable" scrollButtons="auto">
-                <Tab label="Search" {...controlTab(0)} icon={<Collections />}/>
-                <Tab label={`Favorites(${props.favorites.length})`} {...controlTab(1)} icon={<Favorite />} />
-            </Tabs>
-            <TabPanel value={value} index={0}>
-                <Search {...props} showLoading={showLoading} handleShowToastAndMessage={handleShowToastAndMessage}/>
-            </TabPanel>
-            <TabPanel value={value} index={1}>
-                <Favorites {...props} showLoading={showLoading} handleShowToastAndMessage={handleShowToastAndMessage} />
-            </TabPanel>
+            <GiphyContext.Consumer>
+            { context => (
+                <React.Fragment>
+                    <Tabs value={value} onChange={handleChange} className={classes.tab} variant="scrollable" scrollButtons="auto">
+                        <Tab label="Search" {...controlTab(0)} icon={<Collections />}/>
+                        <Tab label={`Favorites(${context.favorites?.length})`} {...controlTab(1)} icon={<Favorite />} />
+                    </Tabs>
+                    <TabPanel value={value} index={0}>
+                        <Search {...props} {...context} showLoading={showLoading} handleShowToastAndMessage={handleShowToastAndMessage}/>
+                    </TabPanel>
+                    <TabPanel value={value} index={1}>
+                        <Favorites {...props} {...context} showLoading={showLoading} handleShowToastAndMessage={handleShowToastAndMessage} />
+                    </TabPanel>
+                </React.Fragment>
+            )}
+            </GiphyContext.Consumer>
         </main>
     </div>
 }
 
-const mapStateToProps = (state) => ({
-    favorites: state.giphy.favorites
-})
+// const mapStateToProps = (state) => ({
+//     favorites: state.giphy.favorites
+// })
 
-const mapDispatchToProps = (dispatch) => ({
-    add2Favorites: favorite => dispatch({type: GiphyConstant.ADD_2_FAVORITE, favorite}),
-    delFromFavorites: id => dispatch({type: GiphyConstant.DEL_FROM_FAVORITE, id}),
-    delAllFavorites: () => dispatch({type: GiphyConstant.DEL_ALL})
-})
+// const mapDispatchToProps = (dispatch) => ({
+//     add2Favorites: favorite => dispatch({type: GiphyConstant.ADD_2_FAVORITE, favorite}),
+//     delFromFavorites: id => dispatch({type: GiphyConstant.DEL_FROM_FAVORITE, id}),
+//     delAllFavorites: () => dispatch({type: GiphyConstant.DEL_ALL})
+// })
 
-export default connect(mapStateToProps, mapDispatchToProps)(TabNavigation)
+// export default connect(mapStateToProps, mapDispatchToProps)(TabNavigation)
+export default TabNavigation;

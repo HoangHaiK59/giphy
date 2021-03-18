@@ -4,7 +4,6 @@ import ThemeProvider from '@material-ui/styles/ThemeProvider';
 import Image from '../image';
 import { ArrowDropDown } from '@material-ui/icons';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import Empty from '../empty';
 
 const useStyles = makeStyles(theme => ({
@@ -121,6 +120,32 @@ const Search = (props) => {
     const theme = useTheme()
     const valueChange = useValueHasChanged(value)
     const offsetChange = useOffsetHasChanged(offset)
+    React.useEffect(() => {
+        document.title = 'Search'
+    })
+    React.useEffect(() => {
+        window.addEventListener('scroll',e => scrollEvent(e))
+        return window.removeEventListener('scroll', e => scrollEvent(e))
+    })
+    const fetchData = React.useCallback(() => {
+        fetchUrl(`https://api.giphy.com/v1/gifs/search?api_key=PF4Zi8i5b4hjlGba2L43PwhOshEXwDr9&q=${value}&limit=8&offset=${offset}&rating=g&lang=en`)
+    }, [value, offset])
+    React.useEffect(() => {
+        fetchData()
+    }, [fetchData])
+    const fetchUrl = (url) => {
+        customLoading(true);
+        fetch(url)
+        .then(res => {
+            res.json().then(d => {
+                if (valueChange) {
+                    setDataVlue(d , 'new')
+                } else if (offsetChange) {
+                    setDataVlue(d , 'concat')
+                }
+            })
+        })
+    }
     const handleChange = (event) => {
         setValue(event.target.value)
         sessionStorage.setItem('searchQuery', event.target.value)
@@ -135,33 +160,14 @@ const Search = (props) => {
         // console.log(textInput.current)
         // textInput.current.styles
     }
-    React.useEffect(() => {
-        document.title = 'Search'
-        if (valueChange || offsetChange) {
-            customLoading(true)
-            fetch(`https://api.giphy.com/v1/gifs/search?api_key=PF4Zi8i5b4hjlGba2L43PwhOshEXwDr9&q=${value}&limit=8&offset=${offset}&rating=g&lang=en`)
-            .then(res => {
-                res.json().then(d => {
-                    if (valueChange) {
-                        setDataVlue(d , 'new')
-                    } else if (offsetChange) {
-                        setDataVlue(d , 'concat')
-                    }
-                })
-            })
-        }
-    })
-    React.useEffect(() => {
-        window.addEventListener('scroll',e => scrollEvent(e))
-        return window.removeEventListener('scroll', e => scrollEvent(e))
-    })
     const setDataVlue = (dataValue, type) => {
         if (type === 'new') {
+            console.log(dataValue)
             setSearchData({...dataValue, data: dataValue.data.map(d => {
-                if (props.favorites.length === 0) {
+                if (props.favorites && props.favorites.length === 0) {
                     return {...d, hover: false, favorite: false}
                 } else {
-                    if (props.favorites.find(f => f.id === d.id)) {
+                    if (props.favorites && props.favorites.find(f => f.id === d.id)) {
                         return {...d, hover: false, favorite: true}
                     } else {
                         return {...d, hover: false, favorite: false}
@@ -170,7 +176,7 @@ const Search = (props) => {
             })})
         } else {
             setSearchData({...dataValue, data: searchData ? searchData.data.concat(dataValue.data.map(d => {
-                if (props.favorites.find(f => f.id === d.id)) {
+                if (props.favorites && props.favorites.find(f => f.id === d.id)) {
                     return {...d, favorite: false, hover: true}
                 } else {
                     return {...d, favorite: false, hover: false}
@@ -247,7 +253,7 @@ const Search = (props) => {
                             <Image 
                             data={d} 
                             add2Favorites={props.add2Favorites}
-                            delFromFavorites={props.delFromFavorites}
+                            delFromFavorites={props.deleteFromFavorites}
                             showToastAndMessage={props.handleShowToastAndMessage}
                             />
                         </div>
@@ -267,19 +273,26 @@ const Search = (props) => {
 
 Search.propTypes = {
     add2Favorites: PropTypes.func.isRequired, 
-    delFromFavorites: PropTypes.func.isRequired,
+    deleteFromFavorites: PropTypes.func.isRequired,
     handleShowToastAndMessage: PropTypes.func.isRequired
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        favorites: state.giphy.favorites
-    }
-}
+// Search.propTypes = {
+//     add2Favorites: PropTypes.func.isRequired, 
+//     delFromFavorites: PropTypes.func.isRequired,
+//     handleShowToastAndMessage: PropTypes.func.isRequired
+// }
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-    }
-}
+// const mapStateToProps = (state, ownProps) => {
+//     return {
+//         favorites: state.giphy.favorites
+//     }
+// }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Search);
+// const mapDispatchToProps = (dispatch, ownProps) => {
+//     return {
+//     }
+// }
+
+// export default connect(mapStateToProps, mapDispatchToProps)(Search);
+export default Search;

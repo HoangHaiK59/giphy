@@ -102,15 +102,15 @@ Image.propTypes = {
     showToastAndMessage: PropTypes.func.isRequired,
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        favorites: state.giphy.favorites
-    }
-}
+// const mapStateToProps = (state, ownProps) => {
+//     return {
+//         favorites: state.giphy.favorites
+//     }
+// }
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-    }
-}
+// const mapDispatchToProps = (dispatch, ownProps) => {
+//     return {
+//     }
+// }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Image);
+export default Image;

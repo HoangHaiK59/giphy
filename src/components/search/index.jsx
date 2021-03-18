@@ -250,7 +250,8 @@ const Search = (props) => {
                 (searchData && searchData.data.length > 0) ? searchData?.data.map(d => 
                     <Grid key={d.id} item xs={6} md={3}>
                         <div className={classes.item}>
-                            <Image 
+                            <Image
+                            favorites={props.favorites}
                             data={d} 
                             add2Favorites={props.add2Favorites}
                             delFromFavorites={props.deleteFromFavorites}
